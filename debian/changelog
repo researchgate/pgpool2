@@ -1,3 +1,9 @@
+pgpool2 (3.3.7-1+rg2) trusty; urgency=medium
+
+  * drop systemd dependencies
+
+ -- Michael Renner <michael.renner@amd.co.at>  Wed, 12 Aug 2015 18:24:22 +0200
+
 pgpool2 (3.3.7-1+rg1) trusty; urgency=medium
 
   * New upstream release.
