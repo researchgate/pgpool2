@@ -1,0 +1,32 @@
+Description: wrap select() with semahpores
+ .
+
+---
+--- pgpool2-3.3.7.orig/child.c
++++ pgpool2-3.3.7/child.c
+@@ -535,7 +535,9 @@ static POOL_CONNECTION *do_accept(int un
+ #endif
+ 	}
+ 
++	pool_semaphore_lock(LISTEN_FD_SEM);
+ 	fds = select(Max(unix_fd, inet_fd)+1, &readmask, NULL, NULL, timeoutval);
++	pool_semaphore_unlock(LISTEN_FD_SEM);
+ 
+ 	save_errno = errno;
+ 	/* check backend timer is expired */
+--- pgpool2-3.3.7.orig/pool.h
++++ pgpool2-3.3.7/pool.h
+@@ -342,11 +342,12 @@ extern int my_master_node_id;
+ #define NO_LOAD_BALANCE "/*NO LOAD BALANCE*/"
+ #define NO_LOAD_BALANCE_COMMENT_SZ (sizeof(NO_LOAD_BALANCE)-1)
+ 
+-#define MAX_NUM_SEMAPHORES		4
++#define MAX_NUM_SEMAPHORES		5
+ #define CONN_COUNTER_SEM 0
+ #define REQUEST_INFO_SEM 1
+ #define SHM_CACHE_SEM	2
+ #define QUERY_CACHE_STATS_SEM	3
++#define LISTEN_FD_SEM			4
+ #define MAX_REQUEST_QUEUE_SIZE	10
+ 
+ /*
