@@ -5,7 +5,6 @@ Maintainer: Debian PostgreSQL Maintainers <pkg-postgresql-public@lists.alioth.de
 Uploaders: Christoph Berg <myon@debian.org>
 Build-Depends: debhelper (>= 9), libpq-dev, postgresql-server-dev-all (>= 148~),
  libpam0g-dev, libssl-dev, libmemcached-dev, dh-autoreconf,
- dh-systemd (>= 1.19),
 # test/parser:
  bison, flex, ruby
 Standards-Version: 3.9.5
@@ -61,13 +60,13 @@ Description: pgpool control protocol library - headers
  PostgreSQL database client.  This package contains headers for the pgpool
  control protocol library (libpcp).
 
-Package: postgresql-9.4-pgpool2
+Package: postgresql-9.3-pgpool2
 Architecture: any
-Depends: postgresql-9.4, ${misc:Depends}, ${shlibs:Depends}, libpgpool0 (= ${binary:Version})
+Depends: postgresql-9.3, ${misc:Depends}, ${shlibs:Depends}, libpgpool0 (= ${binary:Version})
 Description: connection pool server and replication proxy for PostgreSQL - modules
  pgpool-II is a middleware that works between PostgreSQL servers and a
  PostgreSQL database client.  This package contains support modules for
- the PostgreSQL 9.4 server:
+ the PostgreSQL 9.3 server:
  .
   * pgpool_adm
   * pgpool_recovery (PostgreSQL 9.1 and above)
