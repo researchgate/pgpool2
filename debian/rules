@@ -17,8 +17,8 @@ override_dh_auto_clean:
 	rm -rf test/jdbc/*.class test/jdbc/result test/jdbc/pgpool.properties
 	$(MAKE) -C test/parser clean
 	rm -rf test/parser/result test/parser/test.diff
-	$(MAKE) -C test/timestamp clean
-	rm -rf test/timestamp/result test/timestamp/test.diff
+#	$(MAKE) -C test/timestamp clean
+#	rm -rf test/timestamp/result test/timestamp/test.diff
 	cd test/regression && bash clean.sh
 	rm -rf debian/postgresql-*-pgpool2/ debian/*.substvars
 
@@ -37,8 +37,8 @@ override_dh_auto_configure:
 override_dh_auto_test:
 	dh_auto_test
 	$(MAKE) -C test/parser test
-	chmod +x test/timestamp/run-test
-	$(MAKE) -C test/timestamp test
+#	chmod +x test/timestamp/run-test
+#	$(MAKE) -C test/timestamp test
 	# test/jdbc is executed by autopkgtest
 
 override_dh_auto_install:
