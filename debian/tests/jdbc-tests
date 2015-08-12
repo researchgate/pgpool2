@@ -1,0 +1,61 @@
+#!/bin/sh
+
+set -e
+
+if [ -z "$PGVIRTUAL" ]; then
+	# when running under adt-run, allow "postgres" to access the temporary
+	# directories
+	if [ -n "$ADTTMP" ]; then
+		chown -R postgres:postgres "$ADTTMP"
+		unset TMPDIR
+	fi
+	/etc/init.d/pgpool2 stop
+	PGVIRTUAL=1 exec pg_virtualenv "$0" "$@"
+fi
+
+# Generate locale needed
+. /usr/share/postgresql-common/pgcommon.sh
+locale_gen en_US.UTF-8 UTF-8
+
+cleanup () {
+	set +e
+	/etc/init.d/pgpool2 stop
+	sed -i -e '/#ADT#/,$d' /etc/pgpool2/pgpool.conf
+}
+
+trap cleanup 0 2 3 15
+
+cd test/jdbc
+
+export PGPORT=9999
+
+cat >> /etc/pgpool2/pgpool.conf <<EOF
+#ADT#
+port = $PGPORT
+backend_hostname0 = '$PGHOST'
+backend_port0 = 5432
+pool_passwd = ''
+EOF
+tail -n4 /etc/pgpool2/pgpool.conf
+echo
+
+cat > pgpool.properties <<EOF
+pgpooltest.host=$PGHOST
+pgpooltest.port=$PGPORT
+pgpooltest.user=$PGUSER
+pgpooltest.password=$PGPASSWORD
+pgpooltest.dbname=postgres
+pgpooltest.options=
+pgpooltest.tests=autocommit batch column lock select update insert
+EOF
+# no need to restore this file, we just unlink it in debian/rules
+cat pgpool.properties
+echo
+
+_SYSTEMCTL_SKIP_REDIRECT=1 /etc/init.d/pgpool2 start
+psql -p $PGPORT -f prepare.sql 2>&1
+echo
+
+export LC_ALL=en_US.UTF-8 # Hoge.java has utf-8 comments
+CLASSPATH=/usr/share/java/postgresql.jar:. ./run.sh
+echo

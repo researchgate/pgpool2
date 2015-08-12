@@ -1,0 +1,2 @@
+version=3
+http://www.pgpool.net/mediawiki/index.php/Downloads .*pgpool-II-([0-9.]+).tar.gz

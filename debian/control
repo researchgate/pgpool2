@@ -1,0 +1,75 @@
+Source: pgpool2
+Section: database
+Priority: optional
+Maintainer: Debian PostgreSQL Maintainers <pkg-postgresql-public@lists.alioth.debian.org>
+Uploaders: Christoph Berg <myon@debian.org>
+Build-Depends: debhelper (>= 9), libpq-dev, postgresql-server-dev-all (>= 148~),
+ libpam0g-dev, libssl-dev, libmemcached-dev, dh-autoreconf,
+ dh-systemd (>= 1.19),
+# test/parser:
+ bison, flex, ruby
+Standards-Version: 3.9.5
+Homepage: http://www.pgpool.net/mediawiki/index.php/Main_Page
+Vcs-Git: git://anonscm.debian.org/pkg-postgresql/pgpool2.git
+Vcs-Browser: http://anonscm.debian.org/gitweb/?p=pkg-postgresql/pgpool2.git
+XS-Testsuite: autopkgtest
+
+Package: pgpool2
+Architecture: any
+Depends: lsb-base (>= 3.0-3), postgresql-common (>= 26), ucf,
+ ${misc:Depends}, ${shlibs:Depends}, libpgpool0 (= ${binary:Version})
+Enhances: postgresql
+Conflicts: pgpool
+Replaces: pgpool
+Description: connection pool server and replication proxy for PostgreSQL
+ pgpool-II is a middleware that works between PostgreSQL servers and a
+ PostgreSQL database client. It provides the following features:
+ .
+  * Connection Pooling
+  * Replication
+  * Load Balance
+  * Limiting Exceeding Connections
+  * Parallel Query
+ .
+ pgpool-II talks PostgreSQL's backend and frontend protocol, and relays a
+ connection between them. Therefore, a database application (frontend) thinks
+ that pgpool-II is the actual PostgreSQL server, and the server (backend) sees
+ pgpool-II as one of its clients. Because pgpool-II is transparent to both the
+ server and the client, an existing database application can be used with
+ pgpool-II almost without a change to its sources.
+ .
+ This is version 3 of pgpool-II, the second generation of pgpool.
+
+Package: libpgpool0
+Architecture: any
+Section: libs
+Depends: ${misc:Depends}, ${shlibs:Depends}
+Breaks: pgpool2 (<< 3.1.1)
+Description: pgpool control protocol library
+ pgpool-II is a middleware that works between PostgreSQL servers and a
+ PostgreSQL database client.  This package contains the pgpool control
+ protocol library (libpcp).
+
+Package: libpgpool-dev
+Architecture: any
+Section: libdevel
+Depends: ${misc:Depends}, ${shlibs:Depends}, libpgpool0 (= ${binary:Version})
+# We also provide /usr/lib/libpcp.{a,so}
+Conflicts: libpcp3-dev
+Description: pgpool control protocol library - headers
+ pgpool-II is a middleware that works between PostgreSQL servers and a
+ PostgreSQL database client.  This package contains headers for the pgpool
+ control protocol library (libpcp).
+
+Package: postgresql-9.4-pgpool2
+Architecture: any
+Depends: postgresql-9.4, ${misc:Depends}, ${shlibs:Depends}, libpgpool0 (= ${binary:Version})
+Description: connection pool server and replication proxy for PostgreSQL - modules
+ pgpool-II is a middleware that works between PostgreSQL servers and a
+ PostgreSQL database client.  This package contains support modules for
+ the PostgreSQL 9.4 server:
+ .
+  * pgpool_adm
+  * pgpool_recovery (PostgreSQL 9.1 and above)
+  * pgpool_regclass (PostgreSQL 9.1 and above)
+

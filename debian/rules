@@ -1,0 +1,73 @@
+#!/usr/bin/make -f
+
+SRCDIR = .
+include /usr/share/postgresql-common/pgxs_debian_control.mk
+clean: debian/control
+.PHONY: debian/control
+
+LDFLAGS += -Wl,--as-needed
+
+D=debian/pgpool2
+
+override_dh_auto_clean:
+	dh_auto_clean
+	$(MAKE) -C sql clean
+	rm -f config.log lex.yy.c
+	$(MAKE) -C pgpool_adm clean USE_PGXS=1
+	rm -rf test/jdbc/*.class test/jdbc/result test/jdbc/pgpool.properties
+	$(MAKE) -C test/parser clean
+	rm -rf test/parser/result test/parser/test.diff
+	$(MAKE) -C test/timestamp clean
+	rm -rf test/timestamp/result test/timestamp/test.diff
+	cd test/regression && bash clean.sh
+	rm -rf debian/postgresql-*-pgpool2/ debian/*.substvars
+
+override_dh_auto_configure:
+	./configure --prefix=/usr \
+		--sysconfdir=/etc/pgpool2 \
+		--bindir=/usr/sbin \
+		--includedir=/usr/include/pgpool2 \
+		--disable-rpath \
+		--with-openssl \
+		--with-pam \
+		--with-memcached=/usr/include/libmemcached
+	# create directory here so we can unlink it in case autopkgtest leaves files owned by root behind
+	mkdir -p test/jdbc/result
+
+override_dh_auto_test:
+	dh_auto_test
+	$(MAKE) -C test/parser test
+	chmod +x test/timestamp/run-test
+	$(MAKE) -C test/timestamp test
+	# test/jdbc is executed by autopkgtest
+
+override_dh_auto_install:
+	dh_auto_install
+	set -e ; \
+	for v in `pg_buildext supported-versions .` ; do \
+		echo "# $$v ##################################################################" ; \
+		PG_CONFIG=/usr/lib/postgresql/$$v/bin/pg_config ; \
+		$(MAKE) -C sql clean PG_CONFIG=$$PG_CONFIG ; \
+		$(MAKE) -C sql PG_CONFIG=$$PG_CONFIG ; \
+		$(MAKE) -C sql install DESTDIR=$(CURDIR)/debian/postgresql-$$v-pgpool2 PG_CONFIG=$$PG_CONFIG ; \
+		if [ -f $$($$PG_CONFIG --includedir-server)/foreign/foreign.h ] ; then \
+			$(MAKE) -C pgpool_adm clean USE_PGXS=1 PG_CONFIG=$$PG_CONFIG ; \
+			$(MAKE) -C pgpool_adm USE_PGXS=1 PG_CONFIG=$$PG_CONFIG CFLAGS="-I$$($$PG_CONFIG --includedir-server) $(CFLAGS) -I../pcp" LDFLAGS="$(LDFLAGS) -L../pcp/.libs" ; \
+			$(MAKE) -C pgpool_adm install DESTDIR=$(CURDIR)/debian/postgresql-$$v-pgpool2 USE_PGXS=1 PG_CONFIG=$$PG_CONFIG ; \
+		fi \
+	done
+
+override_dh_install:
+	# pgpool.conf is handled by ucf
+	mkdir -p debian/tmp/usr/share/pgpool2
+	mv debian/tmp/etc/pgpool2/pgpool.conf.sample debian/tmp/usr/share/pgpool2/pgpool.conf
+	set -e ; for f in pcp.conf pool_hba.conf ; do mv debian/tmp/etc/pgpool2/$$f.sample debian/tmp/etc/pgpool2/$$f ; done
+	dh_install --list-missing
+
+%:
+# use dh_systemd_* only on recent dists that have dh-systemd (>= 1.19)
+ifneq ($(wildcard /usr/bin/dh_systemd_start),)
+	dh $@ --with autoreconf,systemd
+else
+	dh $@ --with autoreconf
+endif
