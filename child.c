@@ -535,7 +535,9 @@ static POOL_CONNECTION *do_accept(int unix_fd, int inet_fd, struct timeval *time
 #endif
 	}
 
+	pool_semaphore_lock(LISTEN_FD_SEM);
 	fds = select(Max(unix_fd, inet_fd)+1, &readmask, NULL, NULL, timeoutval);
+	pool_semaphore_unlock(LISTEN_FD_SEM);
 
 	save_errno = errno;
 	/* check backend timer is expired */

@@ -342,11 +342,12 @@ extern int my_master_node_id;
 #define NO_LOAD_BALANCE "/*NO LOAD BALANCE*/"
 #define NO_LOAD_BALANCE_COMMENT_SZ (sizeof(NO_LOAD_BALANCE)-1)
 
-#define MAX_NUM_SEMAPHORES		4
+#define MAX_NUM_SEMAPHORES		5
 #define CONN_COUNTER_SEM 0
 #define REQUEST_INFO_SEM 1
 #define SHM_CACHE_SEM	2
 #define QUERY_CACHE_STATS_SEM	3
+#define LISTEN_FD_SEM			4
 #define MAX_REQUEST_QUEUE_SIZE	10
 
 /*
